@@ -2,22 +2,32 @@ package thom.exotics.com.rockpaperscissors;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private final static int REQUEST_ENABLE_BT = 1;
+    BluetoothConnectionHandler btConnection;
+    ListView deviceList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        btConnection = new BluetoothConnectionHandler();
+
+        deviceList = (ListView) findViewById(R.id.listView);
         Button btnHost = (Button) findViewById(R.id.hostClick);
         Button btnJoin = (Button) findViewById(R.id.joinClick);
 
@@ -30,7 +40,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         // check that Bluetooth is on
-        bluetoothConnection();
+
+        btConnection = new BluetoothConnectionHandler(this);
+        deviceList.setAdapter(btConnection.getMArrayAdapter());
 
         switch (v.getId()) {
             case R.id.hostClick:
@@ -40,21 +52,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.joinClick:
                 // TODO: create a bluetooth client connection to the server
                 System.out.println("DeBug - Join was clicked");
+                break;
         }
-    }
-
-    public void bluetoothConnection() {
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-            // Device does not support Bluetooth
-            System.out.println("DeBug - Device does not support Bluetooth");
-        } else {
-            if (!mBluetoothAdapter.isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                this.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            }
-        }
-
     }
 
 }
