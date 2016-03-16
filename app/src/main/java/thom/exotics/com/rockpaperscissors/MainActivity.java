@@ -2,37 +2,45 @@ package thom.exotics.com.rockpaperscissors;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-public class MainActivity extends AppCompatActivity  implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final static int REQUEST_ENABLE_BT = 1;
-
-    private Button btnHost = (Button) findViewById(R.id.hostClick);
-    private Button btnJoin = (Button) findViewById(R.id.joinClick);
-
-    private BluetoothConnectionHandler btConnection;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        btnHost.setOnClickListener(this);
-//        btnJoin.setOnClickListener(this);
+        Button btnHost = (Button) findViewById(R.id.hostClick);
+        Button btnJoin = (Button) findViewById(R.id.joinClick);
+
+        btnHost.setOnClickListener(this);
+        btnJoin.setOnClickListener(this);
 
 
     }
 
     @Override
     public void onClick(View v) {
-        System.out.println("DeBug - button clicked");
+        // check that Bluetooth is on
         bluetoothConnection();
+
+        switch (v.getId()) {
+            case R.id.hostClick:
+                // TODO: create a bluetooth server connection
+                System.out.println("DeBug - Host was clicked");
+                break;
+            case R.id.joinClick:
+                // TODO: create a bluetooth client connection to the server
+                System.out.println("DeBug - Join was clicked");
+        }
     }
 
     public void bluetoothConnection() {
