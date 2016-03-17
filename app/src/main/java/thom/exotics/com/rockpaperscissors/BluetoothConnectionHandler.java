@@ -34,23 +34,10 @@ public class BluetoothConnectionHandler {
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         theActivity.registerReceiver(mReceiver, filter);
 
+        filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        theActivity.registerReceiver(mReceiver, filter);
+        bBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-//        try {
-//            Set<BluetoothDevice> pairedDevices = bBluetoothAdapter.getBondedDevices();
-//            // If there are paired devices
-//            System.out.println("DeBug - pairedDevices: " + pairedDevices.size());
-//            if (pairedDevices.size() > 0) {
-//
-//                // Loop through paired devices
-//                for (BluetoothDevice device : pairedDevices) {
-//                    // Add the name and address to an array adapter to show in a ListView
-//                    System.out.println(device.getName() + " <-> " + device.getAddress());
-//                    bArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-//                }
-//            }
-//        } catch (Exception e) {
-//            System.out.println("DeBug - ERROR: paired devices: " + e);
-//        }
     }
 
     public ArrayAdapter getMArrayAdapter(){
@@ -100,6 +87,7 @@ public class BluetoothConnectionHandler {
                 // If it's already paired, skip it, because it's been listed already
                 if (device.getBondState() != BluetoothDevice.BOND_BONDED)
                 {
+                    System.out.println(device.getName() + " <-> " + device.getAddress());
                     bArrayAdapter.add(device.getName() + "\n" + device.getAddress());
                     bArrayAdapter.notifyDataSetChanged();
                 }

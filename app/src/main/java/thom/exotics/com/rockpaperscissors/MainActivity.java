@@ -60,7 +60,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // Turn on bluetooth if not already on
                 btConnection.enableBluetooth();
                 // Discover bluetooth devices
-                btConnection.discoverDevices(); // TODO: check that we are supposed to discover here.
+                btConnection.discoverDevices();
+                // Update the listView
+                deviceList.setAdapter(btConnection.getMArrayAdapter());
                 break;
         }
     }
@@ -69,25 +71,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
     }
-
-//    // Create a BroadcastReceiver for ACTION_FOUND
-//    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            String action = intent.getAction();
-//
-//            // When discovery finds a device
-//            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-//                // Get the BluetoothDevice object from the Intent
-//                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-//                // If it's already paired, skip it, because it's been listed already
-//                if (device.getBondState() != BluetoothDevice.BOND_BONDED)
-//                {
-//                    mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-//                    mArrayAdapter.notifyDataSetChanged();
-//                }
-//            }
-//        }
-//    };
 
 }
