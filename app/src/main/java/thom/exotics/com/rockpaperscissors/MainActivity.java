@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.lang.reflect.Array;
 import java.util.Set;
@@ -68,13 +69,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 deviceList.setClickable(true);
                 deviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
-                    public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        // get the name of the device from the string in the deviceList
+                        String deviceName = ((String) deviceList.getItemAtPosition(position)).split("\n")[0];
+                        // get the address of the device from the string in the deviceList
+                        String address = ((String) deviceList.getItemAtPosition(position)).split("\n")[1];
+
                         System.out.println("DeBug - Test Clicked -START-------------------------");
-                        System.out.println("DeBug - arg0: " + arg0);
-                        System.out.println("DeBug - arg1: " + arg1);
-                        System.out.println("DeBug - posi: " + position);
-                        System.out.println("DeBug - arg3: " + arg3);
+                        System.out.println("DeBug - Device Name: " + deviceName);
+                        System.out.println("DeBug - Device Addr: " + address);
                         System.out.println("DeBug - Test Clicked --END--------------------------");
+
 
                     }
                 });
