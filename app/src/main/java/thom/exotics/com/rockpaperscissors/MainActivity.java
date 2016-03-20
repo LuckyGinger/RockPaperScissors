@@ -10,18 +10,20 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
 import java.lang.reflect.Array;
 import java.util.Set;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private BluetoothConnectionHandler btConnection;
-    private ArrayAdapter<String> mArrayAdapter;
     private ListView deviceList;
+
 
 
     @Override
@@ -63,6 +65,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 btConnection.discoverDevices();
                 // Update the listView
                 deviceList.setAdapter(btConnection.getMArrayAdapter());
+                deviceList.setClickable(true);
+                deviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                        System.out.println("DeBug - Test Clicked -START-------------------------");
+                        System.out.println("DeBug - arg0: " + arg0);
+                        System.out.println("DeBug - arg1: " + arg1);
+                        System.out.println("DeBug - posi: " + position);
+                        System.out.println("DeBug - arg3: " + arg3);
+                        System.out.println("DeBug - Test Clicked --END--------------------------");
+
+                    }
+                });
+
                 break;
         }
     }

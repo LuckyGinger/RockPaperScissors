@@ -29,7 +29,7 @@ public class BluetoothConnectionHandler {
     public BluetoothConnectionHandler(Activity activity) {
         theActivity = activity;
 
-        bArrayAdapter = new ArrayAdapter<String>(theActivity, R.layout.activity_main);
+        bArrayAdapter = new ArrayAdapter<String>(theActivity, R.layout.listitem, R.id.textview);
 
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         theActivity.registerReceiver(mReceiver, filter);
