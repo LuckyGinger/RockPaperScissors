@@ -43,6 +43,9 @@ public class BluetoothConnectionHandler {
     public ArrayAdapter getMArrayAdapter(){
         return bArrayAdapter;
     }
+    public BluetoothAdapter getBluetoothAdapter() {
+        return bBluetoothAdapter;
+    }
 
     public void makeDiscoverable() {
         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
@@ -87,7 +90,7 @@ public class BluetoothConnectionHandler {
                 // If it's already paired, skip it, because it's been listed already
                 if (device.getBondState() != BluetoothDevice.BOND_BONDED)
                 {
-                    System.out.println(device.getName() + " <-> " + device.getAddress());
+                    System.out.println("DeBug - " + device.getName() + " <-> " + device.getAddress());
                     bArrayAdapter.add(device.getName() + "\n" + device.getAddress());
                     bArrayAdapter.notifyDataSetChanged();
                 }
