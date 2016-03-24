@@ -64,6 +64,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 System.out.println("DeBug - Host was clicked");
                 // Make device discoverable so host can be connected to
                 btConnection.makeDiscoverable();
+
+                BluetoothAdapter btAdapter = btConnection.getBluetoothAdapter();
+
+                String name = "bluetoothComm";
+                try {
+                    // Create the connection to the Client
+                    final BluetoothServerSocket btServer = btAdapter.listenUsingInsecureRfcommWithServiceRecord(name, MY_UUID);
+                    BluetoothSocket serverSocket = btServer.accept();
+
+                } catch (Exception e) {
+                    System.out.println("DeBug - Error making server");
+                    e.printStackTrace();
+                }
+
                 break;
             case R.id.joinClick:
                 // TODO: create a bluetooth client connection to the server
@@ -88,45 +102,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         System.out.println("DeBug - Device Addr: " + address);
 
                         // TODO: set up the server connection
-                        BluetoothAdapter btAdapter = btConnection.getBluetoothAdapter();
-                        acceptThread(btAdapter, deviceName);
+//                        acceptThread(btAdapter, deviceName);
+
+
+                        try {
+                            // Create the connection to the Server
+                            BluetoothDevice device = btConnection.getBluetoothDevice();
+                            BluetoothSocket clientSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
+                            clientSocket.connect();
+                        } catch (IOException e) {
+                            System.out.println("DeBug - Error making client");
+                            e.printStackTrace();
+                        }
+
                     }
                 });
 
                 break;
         }
     }
-
-    public void acceptThread(BluetoothAdapter btAdapter, String name) {
-        BluetoothServerSocket tmp = null;
-        try {
-            tmp = btAdapter.listenUsingRfcommWithServiceRecord("MYYAPP", MY_UUID);
-
-        } catch (IOException e) { }
-        mmServerSocket = tmp;
-    }
- 
-//    public void run() {
-//        BluetoothSocket socket = null;
-//        while (true) {
-//            try {
-//                socket = mmServerSocket.accept();
-//
-//            } catch (IOException e) {
-//                break;
-//            }
-//            // If a connection was accepted
-//            if (socket != null) {
-//                // Do work to manage the connection(in a separate thread)
-//                manageConnectedSocket(socket);
-//                mmServerSocket.close();
-//            }
-//        }
-//    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-    }
-
 }

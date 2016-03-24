@@ -21,6 +21,7 @@ public class BluetoothConnectionHandler {
     private BluetoothAdapter bBluetoothAdapter = null;
     private ArrayAdapter<String> bArrayAdapter;
     private IntentFilter filter;
+    private BluetoothDevice device;
 
     public BluetoothConnectionHandler() {
         // Do nothing for now
@@ -45,6 +46,9 @@ public class BluetoothConnectionHandler {
     }
     public BluetoothAdapter getBluetoothAdapter() {
         return bBluetoothAdapter;
+    }
+    public BluetoothDevice getBluetoothDevice() {
+        return device;
     }
 
     public void makeDiscoverable() {
@@ -86,7 +90,7 @@ public class BluetoothConnectionHandler {
                 // Get the BluetoothDevice object from the Intent
 
                 System.out.println("DeBug - broadcastReciver for ACTION_FOUND");
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 // If it's already paired, skip it, because it's been listed already
                 if (device.getBondState() != BluetoothDevice.BOND_BONDED)
                 {
