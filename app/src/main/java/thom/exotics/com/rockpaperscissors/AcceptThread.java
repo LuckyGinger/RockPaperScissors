@@ -9,10 +9,12 @@ import java.util.UUID;
 /**
  * Created by Thom on 3/20/2016.
  */
-public class ServerSide extends Thread{
+public class AcceptThread extends Thread{
     private BluetoothServerSocket mmServerSocket;
 
-    public void ServerSide(BluetoothAdapter btAdapter, String name, UUID uuid){
+
+
+    public void AcceptThread(BluetoothAdapter btAdapter, String name, UUID uuid){
         BluetoothServerSocket tmp = null;
         try {
             tmp = btAdapter.listenUsingRfcommWithServiceRecord(name, uuid);

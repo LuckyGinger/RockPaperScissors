@@ -1,33 +1,26 @@
 package thom.exotics.com.rockpaperscissors;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.Set;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private BluetoothConnectionHandler btConnection;
     private BluetoothServerSocket mmServerSocket;
-    private ServerSide server;
+    private AcceptThread server;
     private ListView deviceList;
     private static final UUID MY_UUID = UUID.fromString("18c7e7e5-1223-4df0-84d1-70281b08dedb");
 
@@ -66,12 +59,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 btConnection.makeDiscoverable();
 
                 BluetoothAdapter btAdapter = btConnection.getBluetoothAdapter();
-
                 String name = "bluetoothComm";
+
                 try {
                     // Create the connection to the Client
                     final BluetoothServerSocket btServer = btAdapter.listenUsingInsecureRfcommWithServiceRecord(name, MY_UUID);
                     BluetoothSocket serverSocket = btServer.accept();
+
+                    ConnectedThread conThred = new ConnectedThread(serverSocket, new ConnectedThread.CallBackListener(){
+                        @Override
+                        public void onReceived(String msg) {
+                            System.out.print("The Message from Client: '" + msg + "'");
+                        }
+                    });
+
+                    conThred.write(("This is words from server").getBytes());
+                    conThred.cancel();
 
                 } catch (Exception e) {
                     System.out.println("DeBug - Error making server");
@@ -110,6 +113,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             BluetoothDevice device = btConnection.getBluetoothDevice();
                             BluetoothSocket clientSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
                             clientSocket.connect();
+
+                            ConnectedThread conThred = new ConnectedThread(clientSocket, new ConnectedThread.CallBackListener(){
+                                @Override
+                                public void onReceived(String msg) {
+                                    System.out.print("The Message from Sever: " + msg);
+                                }
+                            });
+
+                            conThred.write(("This is words from client").getBytes());
+                            conThred.cancel();
+
                         } catch (IOException e) {
                             System.out.println("DeBug - Error making client");
                             e.printStackTrace();
