@@ -73,8 +73,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     });
 
+                    serverSocket.close();
                     conThred.write(("This is words from server").getBytes());
-                    conThred.cancel();
+//                    conThred.cancel();
 
                 } catch (Exception e) {
                     System.out.println("DeBug - Error making server");
@@ -120,9 +121,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     System.out.print("The Message from Sever: " + msg);
                                 }
                             });
-
+                            clientSocket.close();
                             conThred.write(("This is words from client").getBytes());
-                            conThred.cancel();
+//                            conThred.cancel();
 
                         } catch (IOException e) {
                             System.out.println("DeBug - Error making client");
