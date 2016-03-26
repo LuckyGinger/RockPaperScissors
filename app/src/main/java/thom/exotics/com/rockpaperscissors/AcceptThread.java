@@ -2,6 +2,7 @@ package thom.exotics.com.rockpaperscissors;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -10,42 +11,53 @@ import java.util.UUID;
  * Created by Thom on 3/20/2016.
  */
 public class AcceptThread extends Thread {
-    private Thread t;
+    private final BluetoothServerSocket mmServerSocket;
     private String threadName;
-    AcceptThread (String name) {
+
+    public AcceptThread ( String name, BluetoothAdapter mbtAdapter, UUID theUUID) {
         threadName = name;
+        BluetoothServerSocket tmp = null;
         System.out.println("Creating " + threadName );
+        try {
+            tmp = mbtAdapter.listenUsingRfcommWithServiceRecord(name, theUUID);
+        } catch (IOException e) {}
+        mmServerSocket = tmp;
+
     }
 
     public void run() {
-        System.out.println("Running " + threadName );
-        try {
-            for (int i = 4; i > 0; i--) {
-                System.out.println("Thread: " + threadName + ", " + i);
-                Thread.sleep(50);
+        BluetoothSocket socket = null;
+        System.out.print("Running " + threadName);
+        int counter = 0;
+        while (true) {
+            if (counter++ < 10) {
+                System.out.print(".");
             }
-        } catch (InterruptedException e) {
-            System.out.println("Thread: " + threadName + " interrupted");
+            try {
+                socket = mmServerSocket.accept();
+            } catch (IOException e) {
+                break;
+            }
+            // If a connection was accepted
+            if (socket != null) {
+                System.out.println("Connected Device: " + socket.getRemoteDevice());
+
+                // TODO: figure out what I am doing with managing a connection here
+//                manageConnectedSocket(socket);
+                try {
+                    mmServerSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
         }
         System.out.println("Thread " + threadName + " exiting");
     }
 
-//    public void start() {
-//        System.out.println("Starting " + threadName);
-//        if (t == null) {
-//            t = new Thread (this, threadName);
-//            t.start();
-//        }
-//    }
-//  private BluetoothServerSocket mmServerSocket;
-//
-//
-//
-//    public void AcceptThread(BluetoothAdapter btAdapter, String name, UUID uuid){
-//        BluetoothServerSocket tmp = null;
-//        try {
-//            tmp = btAdapter.listenUsingRfcommWithServiceRecord(name, uuid);
-//        } catch (IOException e) {}
-//        mmServerSocket = tmp;
-//    }
+    public void cancel() {
+        try {
+            mmServerSocket.close();
+        } catch (IOException e) {}
+    }
 }
