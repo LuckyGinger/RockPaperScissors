@@ -39,6 +39,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button btnHost = (Button) findViewById(R.id.hostClick);
         Button btnJoin = (Button) findViewById(R.id.joinClick);
 
+        AcceptThread thread = new AcceptThread("TestThread1");
+        thread.start();
+
+        AcceptThread thread2 = new AcceptThread("TestThread2");
+        thread2.start();
+
+
         btnHost.setOnClickListener(this);
         btnJoin.setOnClickListener(this);
 
