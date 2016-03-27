@@ -20,9 +20,9 @@ public class ManageThread extends Thread {
     private final OutputStream mmOutStream;
     private CallBackListener listener = null;
 
-    public ManageThread(BluetoothSocket socket, CallBackListener aListener) {
+    public ManageThread(BluetoothSocket socket) {
+        System.out.println("DeBug - Starting ManageThread");
         mmSocket = socket;
-        this.listener = aListener;
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
 
@@ -36,23 +36,27 @@ public class ManageThread extends Thread {
     }
 
     public void run() {
+        System.out.println("DeBug - Running ManageThread");
         byte[] buffer = new byte[1024];
         int bytes;
 
         while (true) {
             try {
+                System.out.println("Waiting for input from buffer...");
                 bytes = mmInStream.read(buffer);
-                byte[] readBuf = (byte[]) buffer;
-                String strIncom = new String(readBuf, 0 , bytes);
+                System.out.println("Input Received");
 
-                if (listener != null) {
-                    listener.onReceived(strIncom);
-                }
+                byte[] readBuf = (byte[]) buffer;
+
+                String strIncom = new String(readBuf);
+
+                System.out.print("Message: " + strIncom);
 
             } catch (IOException e) {
                 break;
             }
         }
+        System.out.println("DeBug - Ending ManageThread");
     }
 
     public void write(byte[] bytes) {

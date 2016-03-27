@@ -13,6 +13,7 @@ import java.util.UUID;
 public class AcceptThread extends Thread {
     private final BluetoothServerSocket mmServerSocket;
     private String threadName;
+    private ManageThread manager;
 
     public AcceptThread ( String name, BluetoothAdapter mbtAdapter, UUID theUUID) {
         threadName = name;
@@ -42,8 +43,11 @@ public class AcceptThread extends Thread {
             if (socket != null) {
                 System.out.println("Connected Device: " + socket.getRemoteDevice());
 
-                // TODO: figure out what I am doing with managing a connection here
-//                manageConnectedSocket(socket);
+                // Start managing the connection //TODO: this might need to be changed...
+                manager = new ManageThread(socket);
+                manager.start();
+
+
                 try {
                     mmServerSocket.close();
                 } catch (IOException e) {
@@ -53,6 +57,10 @@ public class AcceptThread extends Thread {
             }
         }
         System.out.println("Thread " + threadName + " exiting");
+    }
+
+    public ManageThread getManager() {
+        return manager;
     }
 
     public void cancel() {

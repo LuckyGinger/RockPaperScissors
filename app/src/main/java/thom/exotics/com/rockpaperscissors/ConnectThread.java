@@ -16,6 +16,7 @@ public class ConnectThread extends Thread {
     private final BluetoothSocket mmSocket;
     private final BluetoothDevice mmDevice;
     private final BluetoothAdapter btAddapter;
+    private ManageThread manager;
 
     public ConnectThread(String name, BluetoothAdapter mbtAddapter, BluetoothDevice device, UUID theUUID) {
         BluetoothSocket tmp = null;
@@ -47,8 +48,14 @@ public class ConnectThread extends Thread {
             return;
         }
 
-        // TODO: figure out what I am doing with managing a connection here
-//        manageConnectedSocket(mmSocket);
+        // Start managing the connection //TODO: this might need to be changed...
+        manager = new ManageThread(mmSocket);
+        manager.start();
+
+    }
+
+    public ManageThread getManager() {
+        return manager;
     }
 
     public void cancel() {

@@ -32,7 +32,31 @@
         android:layout_height="wrap_content"
         android:id="@+id/listView"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@+id/rockButton" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rock"
+        android:id="@+id/rockButton"
         android:layout_above="@+id/hostClick"
-        android:layout_alignParentEnd="true"/>
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Paper"
+        android:id="@+id/paperButton"
+        android:layout_below="@+id/listView"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Scissors"
+        android:id="@+id/scissorsButton"
+        android:layout_alignTop="@+id/paperButton"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
