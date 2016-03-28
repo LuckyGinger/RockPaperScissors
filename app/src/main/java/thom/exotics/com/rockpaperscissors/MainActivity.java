@@ -1,10 +1,13 @@
 package thom.exotics.com.rockpaperscissors;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,15 +20,71 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.logging.LogRecord;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends Activity implements View.OnClickListener {
 
     private BluetoothConnectionHandler btConnection;
     private BluetoothAdapter mBluetoothAdapter;
     private ListView deviceList;
     private static final UUID MY_UUID = UUID.fromString("18c7e7e5-1223-4df0-84d1-70281b08dedb");
-    private int REQUEST_ENABLE_BT = 1;
+    private static final int SUCCESS_CONNECT = 1;
+    private static final int MESSAGE_READ = 0;
+    private static final int REQUEST_ENABLE_BT = 1;
     private ManageThread mainManager;
+    private Button btnHost;
+    private Button btnJoin;
+    Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            System.out.println("DeBug - Inside of Handler");
+            btnHost.setEnabled(false);
+            btnJoin.setEnabled(false);
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case SUCCESS_CONNECT:
+                    mainManager = new ManageThread((BluetoothSocket)msg.obj);
+                    mainManager.start();
+                    System.out.println("CONNECT");
+                    String s = "successfully connected";
+
+                    Button btnRock = (Button) findViewById(R.id.rockButton);
+                    Button btnPapr = (Button) findViewById(R.id.paperButton);
+                    Button btnScis = (Button) findViewById(R.id.scissorsButton);
+
+                    btnRock.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            System.out.println("Rock was clicked");
+                            mainManager.write(("Rock was clicked").getBytes());
+                        }
+                    });
+                    btnPapr.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            System.out.println("Paper was clicked");
+                            mainManager.write(("Paper was clicked").getBytes());
+                        }
+                    });
+                    btnScis.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            System.out.println("Scissors was clicked");
+                            mainManager.write(("Scissors was clicked").getBytes());
+                        }
+                    });
+
+                    mainManager.write(s.getBytes());
+//                    Toast.makeText(getApplicationContext(), "Successfully Connected", Toast.LENGTH_SHORT).show();
+                    break;
+                case MESSAGE_READ:
+                    byte[] readBuf = (byte[])msg.obj;
+                    String string = new String(readBuf);
+                    System.out.println("Read Msg: " + string);
+                    break;
+            }
+        }
+    };
 
     //TODO: make this better
     private AcceptThread serverCon;
@@ -43,8 +102,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        btConnection = new BluetoothConnectionHandler();
 
         deviceList = (ListView) findViewById(R.id.listView);
-        Button btnHost = (Button) findViewById(R.id.hostClick);
-        Button btnJoin = (Button) findViewById(R.id.joinClick);
+        btnHost = (Button) findViewById(R.id.hostClick);
+        btnJoin = (Button) findViewById(R.id.joinClick);
 
         btnHost.setOnClickListener(this);
         btnJoin.setOnClickListener(this);
@@ -58,62 +117,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Get device ready for Bluetooth connections
         btConnection = new BluetoothConnectionHandler(this);
         mBluetoothAdapter = btConnection.getBluetoothAdapter();
-
-        // Make sure bluetooth is doing it's thang
-        if (mBluetoothAdapter == null) {
-            String DNSB = "System doesn't support Bluetooth";
-            System.out.print("DeBug - " + DNSB);
-            // don't continue
-            return;
-//        } else if (!mBluetoothAdapter.isEnabled()) {
-//            // check that Bluetooth is on
-//            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-//            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-//        }
-        } else {
-            System.out.println("Bluetooth is up and running");
-        }
+        // Turn on bluetooth if not already on
+        btConnection.enableBluetooth();
 
         switch (v.getId()) {
             case R.id.hostClick:
                 System.out.println("DeBug - Host was clicked");
-                isServer = true;
                 bobBarker();
                 break;
             case R.id.joinClick:
                 System.out.println("DeBug - Join was clicked");
-                isServer = false;
                 dutch();
 
                 break;
-            case R.id.rockButton:
-            case R.id.paperButton:
-            case R.id.scissorsButton:
 
-                if (isServer) {
-                    mainManager = serverCon.getManager();
-                    for(int i = 0; i < 10; i++) {
-                        System.out.print("Trying to write to client");
-                        mainManager.write(("Message from host device").getBytes());
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
-                    mainManager = clientCon.getManager();
-                    for(int i = 0; i < 10; i++) {
-                        System.out.print("Trying to write to server");
-                        mainManager.write(("Message from client device").getBytes());
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                break;
         }
     }
 
@@ -124,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Make device discoverable so host can be connected to
 
-        serverCon = new AcceptThread("ServerThread", mBluetoothAdapter, MY_UUID);
+        serverCon = new AcceptThread("ServerThread");
         serverCon.start();
 
     }
@@ -133,16 +150,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void dutch() {
         // TODO: create a bluetooth client connection to the server
         System.out.println("DeBug - Join was clicked");
-        // Turn on bluetooth if not already on
-        btConnection.enableBluetooth();
+
         // Discover bluetooth devices
         btConnection.discoverDevices();
         // Update the listView
         deviceList.setAdapter(btConnection.getMArrayAdapter());
+        deviceList.setVisibility(View.VISIBLE);
         deviceList.setClickable(true);
         deviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (btConnection.isDiscovering()) {
+                    btConnection.cancelDiscovery();
+                }
                 // get the name of the device from the string in the deviceList
                 String deviceName = ((String) deviceList.getItemAtPosition(position)).split("\n")[0];
                 // get the address of the device from the string in the deviceList
@@ -157,9 +177,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 BluetoothDevice device = btConnection.getBluetoothDevice();
                 System.out.println("DeBug - DOES THIS WORK1");
-                ConnectThread clientCon = new ConnectThread("ClientThread", mBluetoothAdapter, device,  MY_UUID);
+                ConnectThread clientCon = new ConnectThread(device);
                 clientCon.start();
 
+                deviceList.setVisibility(View.INVISIBLE);
 //                mainManager = clientCon.getManager();
 //                for(int i = 0; i < 10; i++) {
 //                    System.out.print("Trying to write to server");
@@ -180,8 +201,171 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode != RESULT_CANCELED) {
                 System.out.println("DeBug - Accepted Bluetooth pairing");
-//                bobBarker();
+
+            } else if (resultCode == RESULT_CANCELED) {
+                System.out.println("DeBug - Accepted Bluetooth pairing");
+                btnHost.setEnabled(true);
+                btnJoin.setEnabled(true);
             }
+        }
+    }
+
+    /**
+     * ConnectThread - Tries to establish a connection to the accepting device
+     */
+    public class ConnectThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private final BluetoothDevice mmDevice;
+
+        public ConnectThread(BluetoothDevice device) {
+            BluetoothSocket tmp = null;
+            mmDevice = device;
+
+            try {
+                tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
+            } catch (IOException e) {
+            }
+            mmSocket = tmp;
+        }
+
+        public void run() {
+            // Cancel discovery because it will slow down connection
+            mBluetoothAdapter.cancelDiscovery();
+
+            try {
+                // Connect the device through the socket. This will block
+                // until it succeeds of throws in exception
+                mmSocket.connect();
+                System.out.println("Connected Device: " + mmSocket.getRemoteDevice());
+
+            } catch (IOException connectExeption) {
+                // Unable to connect; close the socket and get to the choppa!
+                try {
+                    mmSocket.close();
+                } catch (IOException closeException) {}
+                return;
+            }
+
+
+//            Toast.makeText(getApplicationContext(), "Device Connected", Toast.LENGTH_SHORT).show();
+            // Start managing the connection //TODO: this might need to be changed...
+            mHandler.obtainMessage(SUCCESS_CONNECT, mmSocket).sendToTarget();
+        }
+
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {}
+        }
+    }
+
+    /**
+     * AcceptThread - Accepts the device trying to connect
+     */
+    public class AcceptThread extends Thread {
+        private final BluetoothServerSocket mmServerSocket;
+        private String threadName;
+
+        public AcceptThread (String name) {
+            threadName = name;
+            BluetoothServerSocket tmp = null;
+            System.out.println("Creating " + threadName);
+            try {
+                tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(name, MY_UUID);
+            } catch (IOException e) {}
+            mmServerSocket = tmp;
+
+        }
+
+        public void run() {
+            BluetoothSocket socket = null;
+            System.out.print("Running " + threadName);
+            int counter = 0;
+            while (true) {
+                if (counter++ < 10) {
+                    System.out.print(".");
+                }
+                try {
+                    socket = mmServerSocket.accept();
+                } catch (IOException e) {
+                    break;
+                }
+                // If a connection was accepted
+                if (socket != null) {
+                    System.out.println("Connected Device: " + socket.getRemoteDevice());
+//                    Toast.makeText(getApplicationContext(), "Device Connected", Toast.LENGTH_SHORT).show();
+                    // Start managing the connection //TODO: this might need to be changed...
+                    mHandler.obtainMessage(SUCCESS_CONNECT, socket).sendToTarget();
+
+                    try {
+                        mmServerSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+            }
+            System.out.println("Thread " + threadName + " exiting");
+        }
+
+        public void cancel() {
+            try {
+                mmServerSocket.close();
+            } catch (IOException e) {}
+        }
+    }
+
+    public class ManageThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+
+        public ManageThread(BluetoothSocket socket) {
+            System.out.println("DeBug - Starting ManageThread");
+            mmSocket = socket;
+            InputStream tmpIn = null;
+            OutputStream tmpOut = null;
+
+            try {
+                tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
+            } catch (IOException e) {}
+
+            mmInStream = tmpIn;
+            mmOutStream = tmpOut;
+        }
+
+        public void run() {
+            System.out.println("DeBug - Running ManageThread");
+            byte[] buffer = new byte[1024];
+            int bytes;
+
+            while (true) {
+                try {
+                    System.out.println("Waiting for input from buffer...");
+                    bytes = mmInStream.read(buffer);
+                    System.out.println("Input Received");
+
+                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
+                            .sendToTarget();
+
+                } catch (IOException e) {
+                    break;
+                }
+            }
+            System.out.println("DeBug - Ending ManageThread");
+        }
+
+        public void write(byte[] bytes) {
+            try {
+                mmOutStream.write(bytes);
+            } catch (IOException e) {}
+        }
+
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {}
         }
     }
 }

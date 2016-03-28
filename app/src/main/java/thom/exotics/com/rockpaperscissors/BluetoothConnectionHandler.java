@@ -75,7 +75,16 @@ public class BluetoothConnectionHandler {
 
     public void discoverDevices() {
         System.out.println("DeBug - discovering devices");
+        bBluetoothAdapter.cancelDiscovery();
         bBluetoothAdapter.startDiscovery();
+    }
+
+    public void cancelDiscovery() {
+        bBluetoothAdapter.cancelDiscovery();
+    }
+
+    public Boolean isDiscovering() {
+        return bBluetoothAdapter.isDiscovering();
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND
