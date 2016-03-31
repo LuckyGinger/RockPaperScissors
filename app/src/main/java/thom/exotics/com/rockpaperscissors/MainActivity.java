@@ -304,10 +304,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
             } else if (leLogic.myMove != null && leLogic.theirMove == null) {
                 // TODO: display a message saying "your move"
                 System.out.println("Waiting for slow person to make a move");
+                mainMsg.setText("Waiting for other player");
 
             } else if (leLogic.myMove == null && leLogic.theirMove != null) {
                 // TODO: display a message "waiting for other player"
                 System.out.println("Your move homie.");
+                mainMsg.setText("Waiting for your move");
 
             }
         }
