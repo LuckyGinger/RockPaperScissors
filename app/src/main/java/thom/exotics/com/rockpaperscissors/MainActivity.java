@@ -19,6 +19,7 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.UUID;
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -39,6 +40,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
     Button btnScis;
     ImageView image;
     TextView mainMsg;
+    TextView scoreText;
+    TextView score;
+    Handler gameOverHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            image.setBackgroundResource(R.drawable.game_over);
+            mainMsg.setText("Final Score: " + logic.getScoreCount());
+        }
+    };
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -54,7 +64,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     mainManager.start();
                     System.out.println("CONNECT");
                     mainManager.write(s.getBytes());
-
+                    scoreText.setEnabled(true);
+                    score.setEnabled(true);
+                    score.setText("" + logic.getScoreCount());
                     btnRock = (Button) findViewById(R.id.rockButton);
                     btnPapr = (Button) findViewById(R.id.paperButton);
                     btnScis = (Button) findViewById(R.id.scissorsButton);
@@ -66,11 +78,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             System.out.println("Rock was clicked");
                             logic.myMove = "r";
                             mainManager.write(logic.myMove.getBytes());
+//                            mainManager.write(logic.getScoreCount());
                             image.setBackgroundResource(R.drawable.happy_rock);
                             btnRock.setEnabled(false);
                             btnPapr.setEnabled(false);
                             btnScis.setEnabled(false);
                             logic.getWinner(logic);
+                            score.setText("" + logic.getScoreCount());
                         }
                     });
                     // PAPER
@@ -85,6 +99,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             btnPapr.setEnabled(false);
                             btnScis.setEnabled(false);
                             logic.getWinner(logic);
+                            score.setText("" + logic.getScoreCount());
                         }
                     });
                     // SCISSORS
@@ -99,6 +114,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             btnPapr.setEnabled(false);
                             btnScis.setEnabled(false);
                             logic.getWinner(logic);
+                            score.setText("" + logic.getScoreCount());
                         }
                     });
 
@@ -108,13 +124,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
 //                    byte[] readBuf = (byte[])msg.obj; // TODO: Problem is here
                     String string = (String) msg.obj;
                     // check that this isn't the initial connection
+                    System.out.println("Read Msg: " + logic.theirMove);
                     if (string.equals(s)) {
                         logic.theirMove = null;
                     } else {
                         logic.theirMove = string;
                     }
-                    System.out.println("Read Msg: " + logic.theirMove);
-                    logic.getWinner(logic);
+                logic.getWinner(logic);
+                    score.setText("" + logic.getScoreCount());
+
                     break;
             }
         }
@@ -135,6 +153,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 //        btConnection = new BluetoothConnectionHandler();
         image = (ImageView) findViewById(R.id.imageView2);
         mainMsg = (TextView) findViewById(R.id.textView);
+        scoreText = (TextView) findViewById(R.id.textView2);
+        scoreText.setEnabled(false);
+        score = (TextView) findViewById(R.id.scoreNum);
+        score.setEnabled(false);
         deviceList = (ListView) findViewById(R.id.listView);
         btnHost = (Button) findViewById(R.id.hostClick);
         btnJoin = (Button) findViewById(R.id.joinClick);
@@ -252,6 +274,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public class Logic {
         public String myMove;
         public String theirMove;
+        private int scoreCounter;
 
         public void getWinner(Logic leLogic){
             System.out.println("myMove:    " + logic.myMove);
@@ -276,6 +299,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         System.out.println("Hey buddy you win!");
                         mainMsg.setText("You Win!");
                         image.setBackgroundResource(R.drawable.happy_rock);
+                        scoreCounter++;
                     }
                     clearMoves(leLogic);
                 } else if (leLogic.myMove.equals("p")){
@@ -287,6 +311,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         System.out.println("Hey buddy you win!");
                         mainMsg.setText("You Win!");
                         image.setBackgroundResource(R.drawable.happy_paper);
+                        scoreCounter++;
                     }
                     clearMoves(leLogic);
                 } else if (leLogic.myMove.equals("s")){
@@ -298,6 +323,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         System.out.println("Hey buddy you win!");
                         mainMsg.setText("You Win!");
                         image.setBackgroundResource(R.drawable.happy_scissors);
+                        scoreCounter++;
                     }
                     clearMoves(leLogic);
                 }
@@ -322,6 +348,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
             btnRock.setEnabled(true);
             btnPapr.setEnabled(true);
             btnScis.setEnabled(true);
+        }
+
+        public int getScoreCount() {
+            return scoreCounter;
         }
     }
 
@@ -473,12 +503,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }
             }
             System.out.println("DeBug - Ending ManageThread");
-
+            gameOverHandler.sendEmptyMessage(0);
         }
 
         public void write(byte[] bytes) {
             try {
                 mmOutStream.write(bytes);
+            } catch (IOException e) {}
+        }
+
+        public void write(int itob){
+            try {
+                mmOutStream.write(ByteBuffer.allocate(4).putInt(itob).array());
             } catch (IOException e) {}
         }
 
