@@ -31,9 +31,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/listView"
-        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_above="@+id/rockButton" />
+        android:layout_above="@+id/rockButton"
+        android:layout_below="@+id/textView" />
 
     <Button
         android:layout_width="wrap_content"
@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:text="Paper"
         android:id="@+id/paperButton"
-        android:layout_below="@+id/listView"
+        android:layout_above="@+id/hostClick"
         android:layout_centerHorizontal="true" />
 
     <Button
@@ -58,5 +58,29 @@
         android:id="@+id/scissorsButton"
         android:layout_alignTop="@+id/paperButton"
         android:layout_alignParentEnd="true" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:id="@+id/imageView2"
+        android:layout_alignParentStart="true"
+        android:layout_alignBottom="@+id/listView"
+        android:layout_alignEnd="@+id/scissorsButton"
+        android:layout_below="@+id/textView" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="R/P/S lite"
+        android:id="@+id/textView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/listView"
+        android:textSize="18pt"
+        android:textIsSelectable="true"
+        android:textAlignment="center"
+        android:focusableInTouchMode="false"
+        android:typeface="monospace" />
 
 </RelativeLayout>

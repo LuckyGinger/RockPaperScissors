@@ -8,20 +8,18 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.sql.Struct;
 import java.util.UUID;
-import java.util.logging.LogRecord;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -36,6 +34,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Button btnHost;
     private Button btnJoin;
     private Logic logic;
+    Button btnRock;
+    Button btnPapr;
+    Button btnScis;
+    ImageView image;
+    TextView mainMsg;
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -46,14 +49,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
             super.handleMessage(msg);
             switch (msg.what) {
                 case SUCCESS_CONNECT:
+                    mainMsg.setText("Game On!");
                     mainManager = new ManageThread((BluetoothSocket)msg.obj);
                     mainManager.start();
                     System.out.println("CONNECT");
                     mainManager.write(s.getBytes());
 
-                    Button btnRock = (Button) findViewById(R.id.rockButton);
-                    Button btnPapr = (Button) findViewById(R.id.paperButton);
-                    Button btnScis = (Button) findViewById(R.id.scissorsButton);
+                    btnRock = (Button) findViewById(R.id.rockButton);
+                    btnPapr = (Button) findViewById(R.id.paperButton);
+                    btnScis = (Button) findViewById(R.id.scissorsButton);
 
                     // ROCK
                     btnRock.setOnClickListener(new View.OnClickListener() {
@@ -62,6 +66,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             System.out.println("Rock was clicked");
                             logic.myMove = "r";
                             mainManager.write(logic.myMove.getBytes());
+                            image.setBackgroundResource(R.drawable.happy_rock);
+                            btnRock.setEnabled(false);
+                            btnPapr.setEnabled(false);
+                            btnScis.setEnabled(false);
                             logic.getWinner(logic);
                         }
                     });
@@ -72,6 +80,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             System.out.println("Paper was clicked");
                             logic.myMove = "p";
                             mainManager.write(logic.myMove.getBytes());
+                            image.setBackgroundResource(R.drawable.happy_paper);
+                            btnRock.setEnabled(false);
+                            btnPapr.setEnabled(false);
+                            btnScis.setEnabled(false);
                             logic.getWinner(logic);
                         }
                     });
@@ -82,6 +94,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             System.out.println("Scissors was clicked");
                             logic.myMove = "s";
                             mainManager.write(logic.myMove.getBytes());
+                            image.setBackgroundResource(R.drawable.happy_scissors);
+                            btnRock.setEnabled(false);
+                            btnPapr.setEnabled(false);
+                            btnScis.setEnabled(false);
                             logic.getWinner(logic);
                         }
                     });
@@ -117,7 +133,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 //        System.out.println("DeBug - Random UUDI: " + uuid);
 
 //        btConnection = new BluetoothConnectionHandler();
-
+        image = (ImageView) findViewById(R.id.imageView2);
+        mainMsg = (TextView) findViewById(R.id.textView);
         deviceList = (ListView) findViewById(R.id.listView);
         btnHost = (Button) findViewById(R.id.hostClick);
         btnJoin = (Button) findViewById(R.id.joinClick);
@@ -154,20 +171,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
     // Host connection
     private void bobBarker() {
         System.out.println("DeBug - Host was clicked");
+        mainMsg.setText("Waiting for connection...");
         btConnection.makeDiscoverable();
 
         // Make device discoverable so host can be connected to
 
         serverCon = new AcceptThread("ServerThread");
         serverCon.start();
-
     }
 
     // Client connection
     private void dutch() {
         // TODO: create a bluetooth client connection to the server
         System.out.println("DeBug - Join was clicked");
-
+        mainMsg.setText("Finding Devices...");
         // Discover bluetooth devices
         btConnection.discoverDevices();
         // Update the listView
@@ -177,6 +194,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         deviceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mainMsg.setText("Connecting...");
+
                 if (btConnection.isDiscovering()) {
                     btConnection.cancelDiscovery();
                 }
@@ -245,26 +264,40 @@ public class MainActivity extends Activity implements View.OnClickListener {
                      leLogic.myMove.equals("s") && leLogic.theirMove.equals("s")){
 
                     System.out.println("Game is a tie!");
+                    mainMsg.setText("Tie Game!");
                     clearMoves(leLogic);
+
                 } else if (leLogic.myMove.equals("r")){
                     if (leLogic.theirMove.equals("p")) {
                         System.out.println("You lose... loser.");
+                        mainMsg.setText("You Lost...");
+                        image.setBackgroundResource(R.drawable.mad_rock);
                     } else if (leLogic.theirMove.equals("s")) {
                         System.out.println("Hey buddy you win!");
+                        mainMsg.setText("You Win!");
+                        image.setBackgroundResource(R.drawable.happy_rock);
                     }
                     clearMoves(leLogic);
                 } else if (leLogic.myMove.equals("p")){
                     if (leLogic.theirMove.equals("s")) {
                         System.out.println("You lose... loser.");
+                        mainMsg.setText("You Lost...");
+                        image.setBackgroundResource(R.drawable.mad_paper);
                     } else if (leLogic.theirMove.equals("r")) {
                         System.out.println("Hey buddy you win!");
+                        mainMsg.setText("You Win!");
+                        image.setBackgroundResource(R.drawable.happy_paper);
                     }
                     clearMoves(leLogic);
                 } else if (leLogic.myMove.equals("s")){
                     if (leLogic.theirMove.equals("r")) {
                         System.out.println("You lose... loser.");
+                        mainMsg.setText("You Lost...");
+                        image.setBackgroundResource(R.drawable.mad_scissors);
                     } else if (leLogic.theirMove.equals("p")) {
                         System.out.println("Hey buddy you win!");
+                        mainMsg.setText("You Win!");
+                        image.setBackgroundResource(R.drawable.happy_scissors);
                     }
                     clearMoves(leLogic);
                 }
@@ -283,6 +316,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
             leLogic.myMove = null;
             leLogic.theirMove = null;
             System.out.println("Game data cleared");
+//            mainMsg.setText("Game On!");
+            btnRock.setEnabled(true);
+            btnPapr.setEnabled(true);
+            btnScis.setEnabled(true);
         }
     }
 
@@ -434,6 +471,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }
             }
             System.out.println("DeBug - Ending ManageThread");
+
         }
 
         public void write(byte[] bytes) {
