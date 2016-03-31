@@ -19,6 +19,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Struct;
 import java.util.UUID;
 import java.util.logging.LogRecord;
 
@@ -34,53 +35,70 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private ManageThread mainManager;
     private Button btnHost;
     private Button btnJoin;
+    private Logic logic;
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             System.out.println("DeBug - Inside of Handler");
             btnHost.setEnabled(false);
             btnJoin.setEnabled(false);
+            String s = "successfully connected";
             super.handleMessage(msg);
             switch (msg.what) {
                 case SUCCESS_CONNECT:
                     mainManager = new ManageThread((BluetoothSocket)msg.obj);
                     mainManager.start();
                     System.out.println("CONNECT");
-                    String s = "successfully connected";
+                    mainManager.write(s.getBytes());
 
                     Button btnRock = (Button) findViewById(R.id.rockButton);
                     Button btnPapr = (Button) findViewById(R.id.paperButton);
                     Button btnScis = (Button) findViewById(R.id.scissorsButton);
 
+                    // ROCK
                     btnRock.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             System.out.println("Rock was clicked");
-                            mainManager.write(("Rock was clicked").getBytes());
+                            logic.myMove = "r";
+                            mainManager.write(logic.myMove.getBytes());
+                            logic.getWinner(logic);
                         }
                     });
+                    // PAPER
                     btnPapr.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             System.out.println("Paper was clicked");
-                            mainManager.write(("Paper was clicked").getBytes());
+                            logic.myMove = "p";
+                            mainManager.write(logic.myMove.getBytes());
+                            logic.getWinner(logic);
                         }
                     });
+                    // SCISSORS
                     btnScis.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             System.out.println("Scissors was clicked");
-                            mainManager.write(("Scissors was clicked").getBytes());
+                            logic.myMove = "s";
+                            mainManager.write(logic.myMove.getBytes());
+                            logic.getWinner(logic);
                         }
                     });
 
-                    mainManager.write(s.getBytes());
 //                    Toast.makeText(getApplicationContext(), "Successfully Connected", Toast.LENGTH_SHORT).show();
                     break;
                 case MESSAGE_READ:
-                    byte[] readBuf = (byte[])msg.obj;
-                    String string = new String(readBuf);
-                    System.out.println("Read Msg: " + string);
+//                    byte[] readBuf = (byte[])msg.obj; // TODO: Problem is here
+                    String string = (String) msg.obj;
+                    // check that this isn't the initial connection
+                    if (string.equals(s)) {
+                        logic.theirMove = null;
+                    } else {
+                        logic.theirMove = string;
+                    }
+                    System.out.println("Read Msg: " + logic.theirMove);
+                    logic.getWinner(logic);
                     break;
             }
         }
@@ -89,7 +107,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     //TODO: make this better
     private AcceptThread serverCon;
     private ConnectThread clientCon;
-    private Boolean isServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +125,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         btnHost.setOnClickListener(this);
         btnJoin.setOnClickListener(this);
 
-
+        logic = new Logic();
     }
 
     @Override
@@ -177,7 +194,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 BluetoothDevice device = btConnection.getBluetoothDevice();
                 System.out.println("DeBug - DOES THIS WORK1");
-                ConnectThread clientCon = new ConnectThread(device);
+                clientCon = new ConnectThread(device);
                 clientCon.start();
 
                 deviceList.setVisibility(View.INVISIBLE);
@@ -207,6 +224,65 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 btnHost.setEnabled(true);
                 btnJoin.setEnabled(true);
             }
+        }
+    }
+
+    /**
+     * Hold the game logic pieces
+     */
+    public class Logic {
+        public String myMove;
+        public String theirMove;
+
+        public void getWinner(Logic leLogic){
+            System.out.println("myMove:    " + logic.myMove);
+            System.out.println("theirMove: " + logic.theirMove);
+
+            if (leLogic.myMove != null && leLogic.theirMove != null) {
+                // TODO: check for the winner
+                if ((leLogic.myMove.equals("r") && leLogic.theirMove.equals("r")) ||
+                     leLogic.myMove.equals("p") && leLogic.theirMove.equals("p") ||
+                     leLogic.myMove.equals("s") && leLogic.theirMove.equals("s")){
+
+                    System.out.println("Game is a tie!");
+                    clearMoves(leLogic);
+                } else if (leLogic.myMove.equals("r")){
+                    if (leLogic.theirMove.equals("p")) {
+                        System.out.println("You lose... loser.");
+                    } else if (leLogic.theirMove.equals("s")) {
+                        System.out.println("Hey buddy you win!");
+                    }
+                    clearMoves(leLogic);
+                } else if (leLogic.myMove.equals("p")){
+                    if (leLogic.theirMove.equals("s")) {
+                        System.out.println("You lose... loser.");
+                    } else if (leLogic.theirMove.equals("r")) {
+                        System.out.println("Hey buddy you win!");
+                    }
+                    clearMoves(leLogic);
+                } else if (leLogic.myMove.equals("s")){
+                    if (leLogic.theirMove.equals("r")) {
+                        System.out.println("You lose... loser.");
+                    } else if (leLogic.theirMove.equals("p")) {
+                        System.out.println("Hey buddy you win!");
+                    }
+                    clearMoves(leLogic);
+                }
+            } else if (leLogic.myMove != null && leLogic.theirMove == null) {
+                // TODO: display a message saying "your move"
+                System.out.println("Waiting for slow person to make a move");
+
+            } else if (leLogic.myMove == null && leLogic.theirMove != null) {
+                // TODO: display a message "waiting for other player"
+                System.out.println("Your move homie.");
+
+            }
+        }
+
+        private void clearMoves(Logic leLogic) {
+            leLogic.myMove = null;
+            leLogic.theirMove = null;
+            System.out.println("Game data cleared");
         }
     }
 
@@ -344,10 +420,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 try {
                     System.out.println("Waiting for input from buffer...");
                     bytes = mmInStream.read(buffer);
+                    String string = new String(buffer, 0, bytes);
+                    buffer[bytes] = '\0';
                     System.out.println("Input Received");
 
-                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-                            .sendToTarget();
+                    mHandler.obtainMessage(MESSAGE_READ, bytes, -1, string)
+                            .sendToTarget(); // TODO: Problem is here
+
+                    // Clear the buffer
 
                 } catch (IOException e) {
                     break;
