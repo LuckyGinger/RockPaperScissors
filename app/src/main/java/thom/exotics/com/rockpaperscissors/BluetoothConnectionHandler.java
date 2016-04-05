@@ -27,6 +27,7 @@ public class BluetoothConnectionHandler {
         // Do nothing for now
     }
 
+
     public BluetoothConnectionHandler(Activity activity) {
         theActivity = activity;
 

@@ -1,0 +1,13 @@
+ r/p/s lite
+ --------------------------------------------------------------------------------------------------
+
+ This is an implementation of the rock paper scissors game utilizing the Bluetooth connectivity of
+ android devices. One can play a game of rock paper scissors with a friend, relative, or co-worker
+ in all out fun!
+
+ Setup - 
+
+ 1. build this project in android studio
+ 2. attach two mobile devices
+ 3. run the project
+ 4. connect devices together with 'host' and 'join' buttons
